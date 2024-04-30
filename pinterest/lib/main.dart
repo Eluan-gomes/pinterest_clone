@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
 runApp(MyApp());
@@ -283,47 +286,78 @@ Widget build(BuildContext context) {
 }
 
 class CreatePage extends StatelessWidget {
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Center(
-      child: ElevatedButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (BuildContext context) {
-              return Container(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      leading: Icon(Icons.add),
-                      title: Text('Adicionar'),
-                      onTap: () {
-                        // Ação ao selecionar "Adicionar"
-                        Navigator.pop(context);
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.paste),
-                      title: Text('Pasta'),
-                      onTap: () {
-                        // Ação ao selecionar "Pasta"
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        child: Text('Bottom Sheet'),
+  final picker = ImagePicker();
+
+  Future<void> _getImage(BuildContext context, ImageSource source) async {
+    final pickedFile = await picker.getImage(source: source);
+    if (pickedFile != null) {
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImagePreview(imagePath: pickedFile.path),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (BuildContext context) {
+                return Container(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: Icon(Icons.add),
+                        title: Text('Adicionar'),
+                        onTap: () {
+                          _getImage(context, ImageSource.gallery);
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.camera_alt),
+                        title: Text('Câmera'),
+                        onTap: () {
+                          _getImage(context, ImageSource.camera);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+          child: Text('Bottom Sheet'),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
+
+class ImagePreview extends StatelessWidget {
+  final String imagePath;
+
+  const ImagePreview({required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Preview'),
+      ),
+      body: Center(
+        child: Image.file(File(imagePath)),
+      ),
+    );
+  }
 }
 
 class NotificationsPage extends StatelessWidget {
